@@ -1,4 +1,4 @@
 mod pipeline;
-mod stages;
+pub mod stages;
 
-
+pub use pipeline::{Pipeline, PipelineBuilder};

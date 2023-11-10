@@ -45,8 +45,6 @@ impl Into<Stage> for AddFields {
 
 impl Default for AddFields {
     fn default() -> Self {
-        AddFields {
-            fields: Document::new(),
-        }
+        AddFields::new(None)
     }
 }
