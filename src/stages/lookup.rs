@@ -1,5 +1,5 @@
 use super::{PipelineStage, Stage};
-use bson::{Bson, Document};
+use bson::Document;
 
 pub struct Lookup {
     from: String,

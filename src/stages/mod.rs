@@ -34,12 +34,16 @@ impl StageLocation {
 }
 
 mod add_fields;
+mod bucket;
 mod count;
 mod group;
 mod lookup;
 mod project;
+mod unwind;
 pub use add_fields::AddFields;
+pub use bucket::Bucket;
 pub use count::Count;
 pub use group::Group;
 pub use lookup::Lookup;
 pub use project::Project;
+pub use unwind::Unwind;

@@ -70,8 +70,42 @@ impl PipelineBuilder {
         self
     }
 
+    pub fn lookup(
+        &mut self,
+        from: impl Into<String>,
+        local_field: impl Into<String>,
+        foreign_field: impl Into<String>,
+        as_field: impl Into<String>,
+        pipeline: Option<Vec<Document>>,
+        let_: Option<Document>,
+    ) -> &mut Self {
+        self.add_stage(Lookup::new(
+            from,
+            local_field,
+            foreign_field,
+            as_field,
+            pipeline,
+            let_,
+        ));
+        self
+    }
+
     pub fn project(&mut self, fields: impl Into<Document>) -> &mut Self {
         self.add_stage(Project::new(fields));
+        self
+    }
+
+    pub fn unwind<'a>(
+        &mut self,
+        path: &'a str,
+        preserve_null_and_empty_arrays: bool,
+        include_array_index: Option<&'a str>,
+    ) -> &mut Self {
+        self.add_stage(Unwind::new(
+            path,
+            preserve_null_and_empty_arrays,
+            include_array_index,
+        ));
         self
     }
 }
