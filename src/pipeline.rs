@@ -60,6 +60,49 @@ impl PipelineBuilder {
         self
     }
 
+    pub fn bucket<IB, IS, ID>(
+        &mut self,
+        group_by: IB,
+        boundaries: impl IntoIterator<Item = IB>,
+        default: Option<IS>,
+        output: Option<ID>,
+    ) -> &mut Self 
+    where
+        IB: Into<Bson>,
+        IS: ToString,
+        ID: Into<Document>,
+    {
+        self.add_stage(Bucket::new(
+            group_by,
+            boundaries,
+            default,
+            output,
+        ));
+        self
+    }
+
+    #[allow(non_snake_case)]
+    pub fn bucketAuto<IB, IS, ID>(
+        &mut self,
+        group_by: IB,
+        buckets: i32,
+        granularity: Option<IS>,
+        output: Option<ID>,
+    ) -> &mut Self 
+    where
+        IB: Into<Bson>,
+        IS: ToString,
+        ID: Into<Document>,
+    {
+        self.add_stage(BucketAuto::new(
+            group_by,
+            buckets,
+            granularity,
+            output,
+        ));
+        self
+    }
+
     pub fn count(&mut self, field: &str) -> &mut Self {
         self.add_stage(Count::new(field));
         self
@@ -67,6 +110,11 @@ impl PipelineBuilder {
 
     pub fn group(&mut self, id: impl Into<Bson>, fields: impl Into<Document>) -> &mut Self {
         self.add_stage(Group::new(id, fields));
+        self
+    }
+
+    pub fn limit(&mut self, limit: i64) -> &mut Self {
+        self.add_stage(Limit::new(limit));
         self
     }
 
