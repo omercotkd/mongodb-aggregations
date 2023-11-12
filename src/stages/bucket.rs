@@ -104,8 +104,8 @@ impl PipelineStage for BucketAuto {
 impl BucketAuto {
     pub fn new<IB, IS, ID>(
         group_by: IB,
-        boundaries: impl IntoIterator<Item = IB>,
-        default: Option<IS>,
+        buckets: i32,
+        granularity: Option<IS>,
         output: Option<ID>,
     ) -> Self
     where
@@ -113,10 +113,10 @@ impl BucketAuto {
         IS: ToString,
         ID: Into<Document>,
     {
-        Bucket {
+        BucketAuto {
             group_by: group_by.into(),
-            boundaries: boundaries.into_iter().map(|b| b.into()).collect(),
-            default: default.map(|d| d.to_string()),
+            buckets,
+            granularity: granularity.map(|g| g.to_string()),
             output: output.map(|o| o.into()),
         }
     }
