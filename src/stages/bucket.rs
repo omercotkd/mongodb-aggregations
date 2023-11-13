@@ -1,5 +1,5 @@
 use super::{PipelineStage, Stage};
-use bson::{Bson, Document};
+use bson::{doc, Bson, Document};
 
 pub struct Bucket {
     pub group_by: Bson,
@@ -39,11 +39,11 @@ impl Bucket {
         }
     }
 
-    pub fn add_output_field(
-        &mut self,
-        field: impl Into<String>,
-        expression: impl Into<Bson>,
-    ) -> &mut Self {
+    pub fn add_output_field<IS, IB>(&mut self, field: IS, expression: IB) -> &mut Self
+    where
+        IS: Into<String>,
+        IB: Into<Bson>,
+    {
         if let Some(output) = &mut self.output {
             output.insert(field, expression);
         } else {
@@ -55,11 +55,14 @@ impl Bucket {
         self
     }
 
-    pub fn add_output_fields(&mut self, fields: Document) -> &mut Self {
+    pub fn add_output_fields<ID>(&mut self, fields: ID) -> &mut Self
+    where
+        ID: Into<Document>,
+    {
         if let Some(output) = &mut self.output {
-            output.extend(fields);
+            output.extend(fields.into());
         } else {
-            self.output = Some(fields);
+            self.output = Some(fields.into());
         }
 
         self
@@ -68,22 +71,21 @@ impl Bucket {
 
 impl Into<Document> for Bucket {
     fn into(self) -> Document {
-        let mut doc = Document::new();
+        let mut fields = doc! {
+            "groupBy": self.group_by,
+            "boundaries": self.boundaries
+        };
 
-        doc.insert("groupBy", self.group_by);
-        doc.insert("boundaries", self.boundaries);
         if let Some(default) = self.default {
-            doc.insert("default", default);
+            fields.insert("default", default);
         }
         if let Some(output) = self.output {
-            doc.insert("output", output);
+            fields.insert("output", output);
         }
 
-        let mut bucket = Document::new();
-
-        bucket.insert(Self::NAME, doc);
-
-        bucket
+        doc! {
+            Self::NAME: fields
+        }
     }
 }
 
@@ -110,22 +112,22 @@ impl BucketAuto {
     ) -> Self
     where
         IB: Into<Bson>,
-        IS: ToString,
+        IS: Into<String>,
         ID: Into<Document>,
     {
         BucketAuto {
             group_by: group_by.into(),
             buckets,
-            granularity: granularity.map(|g| g.to_string()),
+            granularity: granularity.map(|g| g.into()),
             output: output.map(|o| o.into()),
         }
     }
 
-    pub fn add_output_field(
-        &mut self,
-        field: impl Into<String>,
-        expression: impl Into<Bson>,
-    ) -> &mut Self {
+    pub fn add_output_field<IS, IB>(&mut self, field: IS, expression: IB) -> &mut Self
+    where
+        IS: Into<String>,
+        IB: Into<Bson>,
+    {
         if let Some(output) = &mut self.output {
             output.insert(field, expression);
         } else {
@@ -137,20 +139,37 @@ impl BucketAuto {
         self
     }
 
-    pub fn add_output_fields(&mut self, fields: Document) -> &mut Self {
+    pub fn add_output_fields<ID>(&mut self, fields: ID) -> &mut Self
+    where
+        ID: Into<Document>,
+    {
         if let Some(output) = &mut self.output {
-            output.extend(fields);
+            output.extend(fields.into());
         } else {
-            self.output = Some(fields);
+            self.output = Some(fields.into());
         }
 
         self
-    } 
+    }
 }
 
 impl Into<Document> for BucketAuto {
     fn into(self) -> Document {
-        todo!()
+        let mut fields = doc! {
+            "groupBy": self.group_by,
+            "buckets": self.buckets
+        };
+
+        if let Some(granularity) = self.granularity {
+            fields.insert("granularity", granularity);
+        };
+        if let Some(output) = self.output {
+            fields.insert("output", output);
+        }
+
+        doc! {
+            Self::NAME: fields
+        }
     }
 }
 

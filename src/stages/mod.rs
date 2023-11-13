@@ -35,6 +35,7 @@ impl StageLocation {
 
 mod add_fields;
 mod bucket;
+mod change_stream;
 mod count;
 mod group;
 mod limit;
