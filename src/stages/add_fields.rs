@@ -1,4 +1,4 @@
-use super::{PipelineStage, Stage};
+use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
 
 pub struct AddFields {
@@ -7,6 +7,7 @@ pub struct AddFields {
 
 impl PipelineStage for AddFields {
     const NAME: &'static str = "$addFields";
+    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl AddFields {

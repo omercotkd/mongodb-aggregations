@@ -1,4 +1,5 @@
 mod pipeline;
+mod errors;
 pub mod stages;
 
 pub use pipeline::{Pipeline, PipelineBuilder};

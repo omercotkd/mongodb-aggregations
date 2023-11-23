@@ -66,18 +66,13 @@ impl PipelineBuilder {
         boundaries: impl IntoIterator<Item = IB>,
         default: Option<IS>,
         output: Option<ID>,
-    ) -> &mut Self 
+    ) -> &mut Self
     where
         IB: Into<Bson>,
         IS: ToString,
         ID: Into<Document>,
     {
-        self.add_stage(Bucket::new(
-            group_by,
-            boundaries,
-            default,
-            output,
-        ));
+        self.add_stage(Bucket::new(group_by, boundaries, default, output));
         self
     }
 
@@ -88,19 +83,13 @@ impl PipelineBuilder {
         buckets: i32,
         granularity: Option<IS>,
         output: Option<ID>,
-    ) -> &mut Self 
+    ) -> &mut Self
     where
         IB: Into<Bson>,
         IS: ToString,
         ID: Into<Document>,
     {
-        self.add_stage(BucketAuto::new(
-            group_by,
-            buckets,
-            granularity,
-            output,
-        ));
-        self
+        todo!()
     }
 
     pub fn count(&mut self, field: &str) -> &mut Self {
@@ -120,7 +109,7 @@ impl PipelineBuilder {
 
     pub fn lookup(
         &mut self,
-        from: impl Into<String>,
+        from: Option<impl Into<String>>,
         local_field: impl Into<String>,
         foreign_field: impl Into<String>,
         as_field: impl Into<String>,
@@ -163,3 +152,36 @@ impl Into<Vec<Document>> for Pipeline {
         self.stages
     }
 }
+
+impl Into<Pipeline> for PipelineBuilder {
+    fn into(self) -> Pipeline {
+        self.build()
+    }
+}
+
+impl Into<Pipeline> for Vec<Stage> {
+    fn into(self) -> Pipeline {
+        PipelineBuilder { stages: self }.build()
+    }
+}
+
+impl Into<Pipeline> for Stage {
+    fn into(self) -> Pipeline {
+        PipelineBuilder { stages: vec![self] }.build()
+    }
+}
+
+impl Into<Bson> for Pipeline {
+    fn into(self) -> Bson {
+        Bson::Array(self.stages.into_iter().map(Bson::Document).collect())
+    }
+}
+
+impl Iterator for Pipeline {
+    type Item = Document;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.stages.pop()
+    }
+}
+

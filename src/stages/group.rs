@@ -1,4 +1,4 @@
-use super::{PipelineStage, Stage};
+use super::{PipelineStage, Stage, StageLocation};
 use bson::{Bson, Document};
 
 pub struct Group {
@@ -8,6 +8,7 @@ pub struct Group {
 
 impl PipelineStage for Group {
     const NAME: &'static str = "$group";
+    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl Group {

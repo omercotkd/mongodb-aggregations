@@ -1,4 +1,4 @@
-use super::{PipelineStage, Stage};
+use super::{PipelineStage, Stage, StageLocation};
 use bson::Document;
 
 pub struct Unwind {
@@ -9,6 +9,7 @@ pub struct Unwind {
 
 impl PipelineStage for Unwind {
     const NAME: &'static str = "$unwind";
+    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl Unwind {

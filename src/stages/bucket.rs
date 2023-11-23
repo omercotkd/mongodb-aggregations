@@ -1,4 +1,4 @@
-use super::{PipelineStage, Stage};
+use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
 
 pub struct Bucket {
@@ -17,6 +17,7 @@ pub struct BucketAuto {
 
 impl PipelineStage for Bucket {
     const NAME: &'static str = "$bucket";
+    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl Bucket {
@@ -101,6 +102,7 @@ impl Into<Stage> for Bucket {
 
 impl PipelineStage for BucketAuto {
     const NAME: &'static str = "$bucketAuto";
+    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl BucketAuto {

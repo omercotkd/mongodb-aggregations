@@ -12,9 +12,9 @@ pub struct Stage {
     pub name: &'static str,
 }
 
-pub trait PipelineStage: Into<Document> + Into<Stage> {
+trait PipelineStage: Into<Document> + Into<Stage> {
     const NAME: &'static str;
-    const LOCATION: StageLocation = StageLocation::Any;
+    const LOCATION: StageLocation;
 }
 
 impl StageLocation {
@@ -33,10 +33,28 @@ impl StageLocation {
     }
 }
 
+impl Stage {
+    pub fn new(location: StageLocation, doc: Document, name: &'static str) -> Self {
+        Stage {
+            location,
+            doc,
+            name,
+        }
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
 mod add_fields;
 mod bucket;
 mod change_stream;
+mod coll_stats;
 mod count;
+mod densify;
+mod documents;
+mod facet;
 mod group;
 mod limit;
 mod lookup;
@@ -44,7 +62,10 @@ mod project;
 mod unwind;
 pub use add_fields::AddFields;
 pub use bucket::{Bucket, BucketAuto};
+pub use change_stream::{ChangeStream, FullDocumentBeforeChangeOptions, FullDocumentOptions};
+pub use coll_stats::CollStats;
 pub use count::Count;
+pub use documents::Documents;
 pub use group::Group;
 pub use limit::Limit;
 pub use lookup::Lookup;

@@ -1,4 +1,4 @@
-use super::{PipelineStage, Stage};
+use super::{PipelineStage, Stage, StageLocation};
 use bson::Document;
 
 pub struct Limit {
@@ -7,6 +7,7 @@ pub struct Limit {
 
 impl PipelineStage for Limit {
     const NAME: &'static str = "$limit";
+    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl Limit {

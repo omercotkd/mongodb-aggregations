@@ -1,21 +1,27 @@
-use super::{PipelineStage, Stage};
+use super::{PipelineStage, Stage, StageLocation};
 use bson::Document;
 
-pub struct Count<'a> {
-    pub field: &'a str,
+pub struct Count {
+    pub field: String,
 }
 
-impl<'a> PipelineStage for Count<'a> {
+impl PipelineStage for Count {
     const NAME: &'static str = "$addFields";
+    const LOCATION: StageLocation = StageLocation::Any;
 }
 
-impl<'a> Count<'a> {
-    pub fn new(field: &'a str) -> Self {
-        Count { field }
+impl Count {
+    pub fn new<IS>(field: IS) -> Self
+    where
+        IS: Into<String>,
+    {
+        Count {
+            field: field.into(),
+        }
     }
 }
 
-impl<'a> Into<Document> for Count<'a> {
+impl Into<Document> for Count {
     fn into(self) -> Document {
         let mut doc = Document::new();
         doc.insert(Self::NAME, self.field);
@@ -23,7 +29,7 @@ impl<'a> Into<Document> for Count<'a> {
     }
 }
 
-impl<'a> Into<Stage> for Count<'a> {
+impl Into<Stage> for Count {
     fn into(self) -> Stage {
         Stage {
             location: Self::LOCATION,
