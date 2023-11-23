@@ -8,13 +8,6 @@ pub struct Bucket {
     pub output: Option<Document>,
 }
 
-pub struct BucketAuto {
-    pub group_by: Bson,
-    pub buckets: i32,
-    pub granularity: Option<String>,
-    pub output: Option<Document>,
-}
-
 impl PipelineStage for Bucket {
     const NAME: &'static str = "$bucket";
     const LOCATION: StageLocation = StageLocation::Any;
@@ -98,6 +91,13 @@ impl Into<Stage> for Bucket {
             name: Self::NAME,
         }
     }
+}
+
+pub struct BucketAuto {
+    pub group_by: Bson,
+    pub buckets: i32,
+    pub granularity: Option<String>,
+    pub output: Option<Document>,
 }
 
 impl PipelineStage for BucketAuto {

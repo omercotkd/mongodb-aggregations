@@ -20,7 +20,7 @@ impl AddFields {
         }
     }
 
-    pub fn add_field<IS, IB>(&mut self, name: IS, value: IB)
+    pub fn add<IS, IB>(&mut self, name: IS, value: IB)
     where
         IS: Into<String>,
         IB: Into<Bson>,
@@ -28,7 +28,7 @@ impl AddFields {
         self.fields.insert(name, value);
     }
 
-    pub fn add_fields<ID>(&mut self, fields: ID)
+    pub fn add_many<ID>(&mut self, fields: ID)
     where
         ID: Into<Document>,
     {
