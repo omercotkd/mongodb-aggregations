@@ -2,7 +2,7 @@ use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
 
 pub struct AddFields {
-    pub fields: Document,
+    fields: Document,
 }
 
 impl PipelineStage for AddFields {
@@ -11,28 +11,42 @@ impl PipelineStage for AddFields {
 }
 
 impl AddFields {
-    pub fn new<ID>(fields: Option<ID>) -> Self
+    pub fn new<ID>(fields: ID) -> Self
     where
         ID: Into<Document>,
     {
         AddFields {
-            fields: fields.map(|f| f.into()).unwrap_or_default(),
+            fields: fields.into(),
         }
     }
 
-    pub fn add<IS, IB>(&mut self, name: IS, value: IB)
+    pub fn fields(&self) -> &Document {
+        &self.fields
+    }
+
+    pub fn add_field<IS, IB>(&mut self, name: IS, value: IB) -> &mut Self
     where
         IS: Into<String>,
         IB: Into<Bson>,
     {
         self.fields.insert(name, value);
+        self
     }
 
-    pub fn add_many<ID>(&mut self, fields: ID)
+    pub fn add_fields<ID>(&mut self, fields: ID) -> &mut Self
     where
         ID: Into<Document>,
     {
         self.fields.extend(fields.into());
+        self
+    }
+
+    pub fn set_fields<ID>(&mut self, fields: ID) -> &mut Self
+    where
+        ID: Into<Document>,
+    {
+        self.fields = fields.into();
+        self
     }
 }
 
@@ -56,6 +70,6 @@ impl Into<Stage> for AddFields {
 
 impl Default for AddFields {
     fn default() -> Self {
-        AddFields::new(None::<Document>)
+        AddFields::new(Document::new())
     }
 }

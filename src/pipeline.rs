@@ -55,21 +55,23 @@ impl PipelineBuilder {
     }
 
     #[allow(non_snake_case)]
-    pub fn addFields(&mut self, fields: Document) -> &mut Self {
-        self.add_stage(AddFields::new(Some(fields)));
+    pub fn addFields<ID>(&mut self, fields: ID) -> &mut Self
+    where
+        ID: Into<Document>,
+    {
+        self.add_stage(AddFields::new(fields));
         self
     }
 
-    pub fn bucket<IB, IS, ID>(
+    pub fn bucket<IB, ID>(
         &mut self,
         group_by: IB,
         boundaries: impl IntoIterator<Item = IB>,
-        default: Option<IS>,
+        default: Option<IB>,
         output: Option<ID>,
     ) -> &mut Self
     where
         IB: Into<Bson>,
-        IS: ToString,
         ID: Into<Document>,
     {
         self.add_stage(Bucket::new(group_by, boundaries, default, output));
@@ -77,19 +79,19 @@ impl PipelineBuilder {
     }
 
     #[allow(non_snake_case)]
-    pub fn bucketAuto<IB, IS, ID>(
+    pub fn bucketAuto<IB, ID>(
         &mut self,
         group_by: IB,
         buckets: i32,
-        granularity: Option<IS>,
         output: Option<ID>,
+        granularity: Option<Granularity>,
     ) -> &mut Self
     where
         IB: Into<Bson>,
-        IS: ToString,
         ID: Into<Document>,
     {
-        todo!()
+        self.add_stage(BucketAuto::new(group_by, buckets, output, granularity));
+        self
     }
 
     pub fn count(&mut self, field: &str) -> &mut Self {
@@ -184,4 +186,3 @@ impl Iterator for Pipeline {
         self.stages.pop()
     }
 }
-
