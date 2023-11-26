@@ -1,9 +1,14 @@
 use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
 
+#[derive(Debug, Builder, Default)]
+#[builder(setter(into))]
 pub struct ChangeStream {
+    #[builder(setter(strip_option))]
     all_changes_for_cluster: Option<bool>,
+    #[builder(setter(strip_option))]
     full_document: Option<FullDocumentOptions>,
+    #[builder(setter(strip_option))]
     full_document_before_change: Option<FullDocumentBeforeChangeOptions>,
     resume_after: u32,
     // version 6.0+
@@ -12,6 +17,7 @@ pub struct ChangeStream {
     start_at_operation_time: u32,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum FullDocumentOptions {
     Default,
     // version 6.0+
@@ -20,6 +26,7 @@ pub enum FullDocumentOptions {
     WhenAvailable,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum FullDocumentBeforeChangeOptions {
     Off,
     WhenAvailable,
