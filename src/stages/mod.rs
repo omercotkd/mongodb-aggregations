@@ -50,6 +50,8 @@ impl Stage {
 mod add_fields;
 mod bucket;
 mod change_stream;
+#[cfg(feature = "v7_0")]
+mod change_stream_large_event;
 mod coll_stats;
 mod count;
 mod current_op;
@@ -79,8 +81,14 @@ mod union_with;
 mod unset;
 mod unwind;
 pub use add_fields::{AddFields, AddFieldsBuilder};
-pub use bucket::{Bucket, BucketAuto, Granularity, BucketAutoBuilder, BucketBuilder};
-pub use change_stream::{ChangeStream, FullDocumentBeforeChangeOptions, FullDocumentOptions};
+pub use bucket::{Bucket, BucketAuto, BucketAutoBuilder, BucketBuilder, Granularity};
+pub use change_stream::{
+    ChangeStream, ChangeStreamBuilder, FullDocumentBeforeChangeOptions, FullDocumentOptions,
+};
+#[cfg(feature = "v7_0")]
+pub use change_stream_large_event::{
+    ChangeStreanSplitLargeEvent, ChangeStreanSplitLargeEventBuilder,
+};
 pub use coll_stats::CollStats;
 pub use count::Count;
 pub use documents::Documents;

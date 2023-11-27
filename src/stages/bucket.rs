@@ -6,9 +6,9 @@ use bson::{doc, Bson, Document};
 pub struct Bucket {
     group_by: Bson,
     boundaries: Vec<Bson>,
-    #[builder(setter(strip_option))]
+    #[builder(setter(strip_option), default = "None")]
     default: Option<Bson>,
-    #[builder(setter(strip_option))]
+    #[builder(setter(strip_option), default = "None")]
     output: Option<Document>,
 }
 
@@ -54,14 +54,24 @@ impl BucketBuilder {
         IS: Into<String>,
         IB: Into<Bson>,
     {
-        todo!()
+        self.output
+            .get_or_insert_with(|| Some(Document::new()))
+            .get_or_insert_with(Document::new)
+            .insert(field.into(), expression.into());
+
+        self
     }
 
     pub fn add_output_fields<ID>(&mut self, fields: ID) -> &mut Self
     where
         ID: Into<Document>,
     {
-        todo!()
+        self.output
+            .get_or_insert_with(|| Some(Document::new()))
+            .get_or_insert_with(Document::new)
+            .extend(fields.into());
+
+        self
     }
 }
 
@@ -105,9 +115,9 @@ impl Into<Stage> for Bucket {
 pub struct BucketAuto {
     group_by: Bson,
     buckets: i32,
-    #[builder(setter(strip_option))]
+    #[builder(setter(strip_option), default = "None")]
     granularity: Option<Granularity>,
-    #[builder(setter(strip_option))]
+    #[builder(setter(strip_option), default = "None")]
     output: Option<Document>,
 }
 
@@ -170,14 +180,24 @@ impl BucketAutoBuilder {
         IS: Into<String>,
         IB: Into<Bson>,
     {
-        todo!()
+        self.output
+            .get_or_insert_with(|| Some(Document::new()))
+            .get_or_insert_with(Document::new)
+            .insert(field.into(), expression.into());
+
+        self
     }
 
     pub fn add_output_fields<ID>(&mut self, fields: ID) -> &mut Self
     where
         ID: Into<Document>,
     {
-        todo!()
+        self.output
+            .get_or_insert_with(|| Some(Document::new()))
+            .get_or_insert_with(Document::new)
+            .extend(fields.into());
+
+        self
     }
 }
 
