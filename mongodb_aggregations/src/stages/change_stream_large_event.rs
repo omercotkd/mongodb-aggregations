@@ -1,37 +1,24 @@
-use super::{PipelineStage, Stage, StageLocation};
-use bson::{doc, Document};
+use bson::doc;
+use mongodb_aggregations_derive::PipelineStage;
 
-#[derive(Debug, Builder, Default)]
+#[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
+#[pipeline_stage(location = "first")]
 pub struct ChangeStreanSplitLargeEvent {
     fragments: i32,
     of: i32,
 }
 
-impl PipelineStage for ChangeStreanSplitLargeEvent {
-    const NAME: &'static str = "$changeStreamLargestEventSplit";
-    const LOCATION: StageLocation = StageLocation::First;
-}
-
-impl Into<Document> for ChangeStreanSplitLargeEvent {
-    fn into(self) -> Document {
-        let mut fields = Document::new();
-
-        fields.insert("fragments", self.fragments);
-        fields.insert("of", self.of);
-
-        doc! {
-            Self::NAME: fields
-        }
+impl ChangeStreanSplitLargeEvent {
+    pub fn new(fragments: i32, of: i32) -> Self {
+        ChangeStreanSplitLargeEvent { fragments, of }
     }
-}
 
-impl Into<Stage> for ChangeStreanSplitLargeEvent {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
-        }
+    pub fn fragments(&self) -> i32 {
+        self.fragments
+    }
+
+    pub fn of(&self) -> i32 {
+        self.of
     }
 }

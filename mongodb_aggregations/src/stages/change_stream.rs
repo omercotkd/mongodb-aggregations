@@ -1,7 +1,7 @@
-use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
+use mongodb_aggregations_derive::PipelineStage;
 
-#[derive(Debug, Builder, Default)]
+#[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
 pub struct ChangeStream {
     #[builder(setter(strip_option), default = "None")]
@@ -34,10 +34,6 @@ pub enum FullDocumentBeforeChangeOptions {
     Required,
 }
 
-impl PipelineStage for ChangeStream {
-    const NAME: &'static str = "$changeStream";
-    const LOCATION: StageLocation = StageLocation::First;
-}
 
 impl ChangeStream {
     pub fn new<ID>(
@@ -65,46 +61,37 @@ impl ChangeStream {
     }
 }
 
-impl Into<Document> for ChangeStream {
-    fn into(self) -> Document {
-        let mut fields = Document::new();
+// impl Into<Document> for ChangeStream {
+//     fn into(self) -> Document {
+//         let mut fields = Document::new();
 
-        if let Some(all_changes_for_cluster) = self.all_changes_for_cluster {
-            fields.insert("allChangesForCluster", all_changes_for_cluster);
-        }
+//         if let Some(all_changes_for_cluster) = self.all_changes_for_cluster {
+//             fields.insert("allChangesForCluster", all_changes_for_cluster);
+//         }
 
-        if let Some(full_document) = self.full_document {
-            fields.insert("fullDocument", full_document);
-        }
+//         if let Some(full_document) = self.full_document {
+//             fields.insert("fullDocument", full_document);
+//         }
 
-        if let Some(full_document_before_change) = self.full_document_before_change {
-            fields.insert("fullDocument", full_document_before_change);
-        }
+//         if let Some(full_document_before_change) = self.full_document_before_change {
+//             fields.insert("fullDocument", full_document_before_change);
+//         }
 
-        #[cfg(feature = "v6_0")]
-        fields.insert("showExpandedEvents", self.show_expanded_events);
+//         #[cfg(feature = "v6_0")]
+//         fields.insert("showExpandedEvents", self.show_expanded_events);
 
-        fields.insert("resumeAfter", self.resume_after);
+//         fields.insert("resumeAfter", self.resume_after);
 
-        fields.insert("startAfter", self.start_after);
+//         fields.insert("startAfter", self.start_after);
 
-        fields.insert("startAtOperationTime", self.start_at_operation_time);
+//         fields.insert("startAtOperationTime", self.start_at_operation_time);
 
-        doc! {
-            Self::NAME: fields
-        }
-    }
-}
+//         doc! {
+//             Self::NAME: fields
+//         }
+//     }
+// }
 
-impl Into<Stage> for ChangeStream {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
-        }
-    }
-}
 
 impl Into<Bson> for FullDocumentOptions {
     fn into(self) -> Bson {

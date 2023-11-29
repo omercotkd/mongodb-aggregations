@@ -93,7 +93,7 @@ mod unwind;
 pub use add_fields::{AddFields, AddFieldsBuilder};
 pub use bucket::{Bucket, BucketAuto, BucketAutoBuilder, BucketBuilder, Granularity};
 pub use change_stream::{
-    ChangeStream, ChangeStreamBuilder, FullDocumentBeforeChangeOptions, FullDocumentOptions,
+    ChangeStream, FullDocumentBeforeChangeOptions, FullDocumentOptions,
 };
 #[cfg(feature = "v7_0")]
 pub use change_stream_large_event::{

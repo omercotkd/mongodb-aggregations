@@ -1,4 +1,3 @@
-use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
 use mongodb_aggregations_derive::PipelineStage;
 
@@ -76,27 +75,7 @@ impl BucketBuilder {
     }
 }
 
-// impl Into<Document> for Bucket {
-//     fn into(self) -> Document {
-//         let mut fields = doc! {
-//             "groupBy": self.group_by,
-//             "boundaries": self.boundaries
-//         };
-
-//         if let Some(default) = self.default {
-//             fields.insert("default", default);
-//         }
-//         if let Some(output) = self.output {
-//             fields.insert("output", output);
-//         }
-
-//         doc! {
-//             Self::NAME: fields
-//         }
-//     }
-// }
-
-#[derive(Debug, Builder, Default)]
+#[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
 pub struct BucketAuto {
     group_by: Bson,
@@ -187,43 +166,18 @@ impl BucketAutoBuilder {
     }
 }
 
-impl PipelineStage for BucketAuto {
-    const NAME: &'static str = "$bucketAuto";
-    const LOCATION: StageLocation = StageLocation::Any;
-}
-
-impl Into<Document> for BucketAuto {
-    fn into(self) -> Document {
-        let mut fields = doc! {
-            "groupBy": self.group_by,
-            "buckets": self.buckets
-        };
-
-        if let Some(granularity) = self.granularity {
-            fields.insert("granularity", granularity);
-        };
-        if let Some(output) = self.output {
-            fields.insert("output", output);
-        }
-
-        doc! {
-            Self::NAME: fields
-        }
-    }
-}
-
-impl Into<Stage> for BucketAuto {
-    fn into(self) -> Stage {
-        if self.buckets < 1 {
-            todo!("add error buckets must be greater than 0");
-        }
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
-        }
-    }
-}
+// impl Into<Stage> for BucketAuto {
+//     fn into(self) -> Stage {
+//         if self.buckets < 1 {
+//             todo!("add error buckets must be greater than 0");
+//         }
+//         Stage {
+//             location: Self::LOCATION,
+//             doc: self.into(),
+//             name: Self::NAME,
+//         }
+//     }
+// }
 
 impl Into<Bson> for Granularity {
     fn into(self) -> Bson {
