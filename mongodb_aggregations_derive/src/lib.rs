@@ -39,21 +39,22 @@ fn parse_struct_attributes(ast: &syn::DeriveInput) -> StageAttribute {
         location: String::from("any"),
     };
 
-    if ast.attrs.is_empty() {
-        return attributes;
-    }
-
     ast.attrs
         .iter()
         .filter(|attribute| attribute.path().is_ident("pipeline_stage"))
-        .for_each(|attribute| {
-            match attribute.meta {
-                syn::Meta::List(ref list) => {
-                    
-                },
-                _ => panic!("Incorrect format for using the `pipeline_stage` attribute."),
-            }
+        .for_each(|attribute| match attribute.meta {
+            syn::Meta::List(ref list) => {}
+            _ => panic!("Incorrect format for using the `pipeline_stage` attribute."),
         });
+
+    if !LOCATIONS.contains(&attributes.location.as_str()) {
+        panic!("Incorrect location for using the `pipeline_stage` attribute.");
+    }
+
+    if !attributes.name.starts_with('$') {
+        attributes.name = format!("${}", attributes.name);
+    }
+
     return attributes;
 }
 
@@ -76,13 +77,40 @@ fn impl_into_stage(
 fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStream2 {
     let name = &ast.ident;
 
+    let fields = match ast.data {
+        syn::Data::Struct(ref data_struct) => match data_struct.fields {
+            syn::Fields::Named(ref fields) => &fields.named,
+            syn::Fields::Unnamed(_) => panic!("Unnamed fields are not supported"),
+            syn::Fields::Unit => panic!("Unit fields are not supported"),
+        },
+        syn::Data::Enum(_) => panic!("Enums are not supported"),
+        syn::Data::Union(_) => panic!("Unions are not supported"),
+    }
+    .iter()
+    .map(|field| (field.ident.as_ref().unwrap(), &field.ty))
+    .collect::<Vec<_>>();
+
+    let mut document_fields = Vec::new();
+
+    for (field_name, _field_type) in fields {
+        let key = field_name.to_string().to_camal_case();
+
+        document_fields.push(quote! {
+            inner_document.insert(#key, self.#field_name);
+        });
+    }
+
     quote! {
         impl Into<bson::Document> for #name {
             fn into(self) -> bson::Document {
 
+                let mut inner_document = bson::Document::new();
+
+                #(#document_fields)*
+
                 let mut document = bson::Document::new();
-                // TODO camel case each struct field and insert into document
-                document.insert(#stage_name, #stage_name);
+
+                document.insert(#stage_name, inner_document);
 
                 document
             }
@@ -98,12 +126,19 @@ impl ToCamalCase for String {
     fn to_camal_case(&self) -> String {
         let mut result = String::from("");
         let mut make_upper = false;
+        let mut first = true;
 
         for c in self.chars() {
             match c {
-                '_' => make_upper = true,
-                _ if !make_upper && c.is_ascii_uppercase() => result.push(c.to_ascii_lowercase()),
-                _ if make_upper => result.push(c.to_ascii_uppercase()),
+                '_' | ' ' => make_upper = true,
+                _ if first => {
+                    result.push(c.to_ascii_lowercase());
+                    first = false;
+                }
+                _ if make_upper => {
+                    result.push(c.to_ascii_uppercase());
+                    make_upper = false;
+                }
                 _ => result.push(c),
             }
         }
