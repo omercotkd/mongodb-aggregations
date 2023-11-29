@@ -47,6 +47,16 @@ impl Stage {
     }
 }
 
+impl From<&str> for StageLocation {
+    fn from(s: &str) -> Self {
+        match s {
+            "first" => StageLocation::First,
+            "last" => StageLocation::Last,
+            _ => StageLocation::Any,
+        }
+    }
+}
+
 mod add_fields;
 mod bucket;
 mod change_stream;

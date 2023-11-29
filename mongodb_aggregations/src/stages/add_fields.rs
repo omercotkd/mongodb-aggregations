@@ -1,15 +1,11 @@
-use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
+use mongodb_aggregations_derive::PipelineStage;
 
-#[derive(Debug, Builder, Default)]
+#[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
+#[pipeline_stage(name = "name", location = "location")]
 pub struct AddFields {
     fields: Document,
-}
-
-impl PipelineStage for AddFields {
-    const NAME: &'static str = "$addFields";
-    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl AddFields {
@@ -45,23 +41,5 @@ impl AddFieldsBuilder {
     {
         self.fields.get_or_insert_with(Document::new).extend(fields);
         self
-    }
-}
-
-impl Into<Document> for AddFields {
-    fn into(self) -> Document {
-        doc! {
-            Self::NAME: self.fields
-        }
-    }
-}
-
-impl Into<Stage> for AddFields {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
-        }
     }
 }

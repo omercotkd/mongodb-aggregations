@@ -3,7 +3,7 @@ mod errors;
 pub mod stages;
 
 pub use pipeline::{Pipeline, PipelineBuilder};
-
+pub use stages::Stage;
 
 #[macro_use]
 extern crate derive_builder;

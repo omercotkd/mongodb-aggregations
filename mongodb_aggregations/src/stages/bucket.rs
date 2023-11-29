@@ -1,7 +1,8 @@
 use super::{PipelineStage, Stage, StageLocation};
 use bson::{doc, Bson, Document};
+use mongodb_aggregations_derive::PipelineStage;
 
-#[derive(Debug, Builder, Default)]
+#[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
 pub struct Bucket {
     group_by: Bson,
@@ -75,40 +76,25 @@ impl BucketBuilder {
     }
 }
 
-impl PipelineStage for Bucket {
-    const NAME: &'static str = "$bucket";
-    const LOCATION: StageLocation = StageLocation::Any;
-}
+// impl Into<Document> for Bucket {
+//     fn into(self) -> Document {
+//         let mut fields = doc! {
+//             "groupBy": self.group_by,
+//             "boundaries": self.boundaries
+//         };
 
-impl Into<Document> for Bucket {
-    fn into(self) -> Document {
-        let mut fields = doc! {
-            "groupBy": self.group_by,
-            "boundaries": self.boundaries
-        };
+//         if let Some(default) = self.default {
+//             fields.insert("default", default);
+//         }
+//         if let Some(output) = self.output {
+//             fields.insert("output", output);
+//         }
 
-        if let Some(default) = self.default {
-            fields.insert("default", default);
-        }
-        if let Some(output) = self.output {
-            fields.insert("output", output);
-        }
-
-        doc! {
-            Self::NAME: fields
-        }
-    }
-}
-
-impl Into<Stage> for Bucket {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
-        }
-    }
-}
+//         doc! {
+//             Self::NAME: fields
+//         }
+//     }
+// }
 
 #[derive(Debug, Builder, Default)]
 #[builder(setter(into))]

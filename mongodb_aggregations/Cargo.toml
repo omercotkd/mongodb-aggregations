@@ -10,7 +10,7 @@ license = "MIT"
 [dependencies]
 bson = "2.7.0"
 derive_builder = "0.12.0"
-
+mongodb_aggregations_derive = { path = "../mongodb_aggregations_derive" }
 
 [features]
 default = ["v7_0"]
