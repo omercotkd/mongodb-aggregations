@@ -3,6 +3,7 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
+#[pipeline_stage(location = "first")]
 pub struct ChangeStream {
     #[builder(setter(strip_option), default = "None")]
     all_changes_for_cluster: Option<bool>,
@@ -34,7 +35,6 @@ pub enum FullDocumentBeforeChangeOptions {
     Required,
 }
 
-
 impl ChangeStream {
     pub fn new<ID>(
         all_changes_for_cluster: Option<bool>,
@@ -60,38 +60,6 @@ impl ChangeStream {
         }
     }
 }
-
-// impl Into<Document> for ChangeStream {
-//     fn into(self) -> Document {
-//         let mut fields = Document::new();
-
-//         if let Some(all_changes_for_cluster) = self.all_changes_for_cluster {
-//             fields.insert("allChangesForCluster", all_changes_for_cluster);
-//         }
-
-//         if let Some(full_document) = self.full_document {
-//             fields.insert("fullDocument", full_document);
-//         }
-
-//         if let Some(full_document_before_change) = self.full_document_before_change {
-//             fields.insert("fullDocument", full_document_before_change);
-//         }
-
-//         #[cfg(feature = "v6_0")]
-//         fields.insert("showExpandedEvents", self.show_expanded_events);
-
-//         fields.insert("resumeAfter", self.resume_after);
-
-//         fields.insert("startAfter", self.start_after);
-
-//         fields.insert("startAtOperationTime", self.start_at_operation_time);
-
-//         doc! {
-//             Self::NAME: fields
-//         }
-//     }
-// }
-
 
 impl Into<Bson> for FullDocumentOptions {
     fn into(self) -> Bson {

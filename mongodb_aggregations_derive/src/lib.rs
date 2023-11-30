@@ -3,8 +3,6 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
-use core::panic;
-
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{parse_macro_input, DeriveInput};
@@ -39,13 +37,20 @@ fn parse_struct_attributes(ast: &syn::DeriveInput) -> StageAttribute {
         location: String::from("any"),
     };
 
-    ast.attrs
+    let attr = ast
+        .attrs
         .iter()
         .filter(|attribute| attribute.path().is_ident("pipeline_stage"))
-        .for_each(|attribute| match attribute.meta {
-            syn::Meta::List(ref list) => {}
+        .map(|attribute| match attribute.meta {
+            syn::Meta::List(ref list) => list,
             _ => panic!("Incorrect format for using the `pipeline_stage` attribute."),
-        });
+        })
+        .collect::<Vec<_>>()
+        .pop();
+
+    if let Some(_attr) = attr {
+        // TODO get the name and location from the attribute
+    }
 
     if !LOCATIONS.contains(&attributes.location.as_str()) {
         panic!("Incorrect location for using the `pipeline_stage` attribute.");
@@ -77,6 +82,7 @@ fn impl_into_stage(
 fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStream2 {
     let name = &ast.ident;
 
+    // Get the fields of the struct
     let fields = match ast.data {
         syn::Data::Struct(ref data_struct) => match data_struct.fields {
             syn::Fields::Named(ref fields) => &fields.named,
@@ -91,6 +97,7 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
         (
             field.ident.as_ref().unwrap(),
             &field.ty,
+            // Getting the field attributes, keeping only the `cfg` ones
             field
                 .attrs
                 .iter()
@@ -101,17 +108,21 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
     .collect::<Vec<_>>();
 
     let mut document_fields = Vec::new();
-    
+
     for (field_name, field_type, field_attrs) in fields {
         let key = field_name.to_string().to_camal_case();
 
-        let normal_quote = quote! {
+        // Generating the document insert for the field
+        let insert_quote = quote! {
             #(#field_attrs)*
             inner_document.insert(#key, self.#field_name);
         };
 
+        // if the field is an Option, we need to check if it is Some before inserting it
+        // This is not a serilization of the struct so this behavior is intentional
         match field_type {
             syn::Type::Path(ref type_path) => {
+                // getting the type name
                 let type_name = type_path.path.segments.last().unwrap().ident.to_string();
 
                 if type_name == "Option" {
@@ -122,10 +133,10 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
                         }
                     });
                 } else {
-                    document_fields.push(normal_quote)
+                    document_fields.push(insert_quote)
                 }
             }
-            _ => document_fields.push(normal_quote),
+            _ => document_fields.push(insert_quote),
         }
     }
 
@@ -135,6 +146,7 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
 
                 let mut inner_document = ::bson::Document::new();
 
+                // Inserting the fields into the inner document
                 #(#document_fields)*
 
                 let mut document = ::bson::Document::new();
@@ -152,6 +164,7 @@ trait ToCamalCase {
 }
 
 impl ToCamalCase for String {
+    #[doc = "Converts a snake_case string to a camelCase string."]
     fn to_camal_case(&self) -> String {
         let mut result = String::from("");
         let mut make_upper = false;

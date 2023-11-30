@@ -1,32 +1,64 @@
-use super::{PipelineStage, Stage, StageLocation};
-use bson::Document;
+use bson::{Bson, Document};
+use mongodb_aggregations_derive::PipelineStage;
 
-pub struct CollStats {}
-
-impl PipelineStage for CollStats {
-    const NAME: &'static str = "$collStats";
-    const LOCATION: StageLocation = StageLocation::First;
+#[derive(Debug, Builder, Default, PipelineStage)]
+#[builder(setter(into))]
+#[pipeline_stage(location = "first")]
+pub struct CollStats {
+    #[builder(setter(strip_option), default = "None")]
+    latency_stats: Option<CollLatencyStats>,
 }
+
 
 impl CollStats {
     pub fn new() -> Self {
-        CollStats {}
+        todo!()
     }
 }
 
-impl Into<Document> for CollStats {
-    fn into(self) -> Document {
+
+#[derive(Debug, Builder, Default, Clone)]
+pub struct CollLatencyStats {
+    #[builder(setter(strip_option), default = "None")]
+    histogram: Option<bool>,
+}
+
+impl CollLatencyStats {
+    pub fn empty() -> Self {
+        CollLatencyStats::default()
+    }
+}
+
+impl Into<Bson> for CollLatencyStats {
+    fn into(self) -> Bson {
         let mut doc = Document::new();
-        doc
+        if let Some(histogram) = self.histogram {
+            doc.insert("histogram", histogram);
+        }
+        doc.into()
     }
 }
 
-impl Into<Stage> for CollStats {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
+
+#[derive(Debug, Clone, Builder, Default)]
+pub struct CollStorageStats {
+    #[builder(setter(strip_option), default = "None")]
+    scale: Option<i32>,
+} 
+
+impl CollStorageStats {
+    pub fn empty() -> Self {
+        CollStorageStats::default()
+    }
+}
+
+
+impl Into<Bson> for CollStorageStats {
+    fn into(self) -> Bson {
+        let mut doc = Document::new();
+        if let Some(scale) = self.scale {
+            doc.insert("scale", scale);
         }
+        doc.into()
     }
 }
