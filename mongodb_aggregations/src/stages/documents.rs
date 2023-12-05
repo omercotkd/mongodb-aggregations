@@ -1,29 +1,18 @@
-use super::{PipelineStage, Stage, StageLocation};
-use bson::{doc, Bson, Document};
+use bson::{Bson, Document};
+use mongodb_aggregations_derive::PipelineStage;
 
+#[derive(Debug, Builder, Default, PipelineStage)]
+#[builder(setter(into))]
+#[pipeline_stage(into_document = true)]
 pub struct Documents {
     expr: Bson,
 }
 
-impl PipelineStage for Documents {
-    const NAME: &'static str = "$documents";
-    const LOCATION: StageLocation = StageLocation::Any;
-}
+// impl Into<Document> for Documents {
+//     fn into(self) -> Document {
+//         doc! {
+//             Self::NAME: self.expr
+//         }
+//     }
+// }
 
-impl Into<Document> for Documents {
-    fn into(self) -> Document {
-        doc! {
-            Self::NAME: self.expr
-        }
-    }
-}
-
-impl Into<Stage> for Documents {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
-        }
-    }
-}

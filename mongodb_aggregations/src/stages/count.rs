@@ -1,13 +1,11 @@
-use super::{PipelineStage, Stage, StageLocation};
-use bson::Document;
+use bson::{Bson, Document};
+use mongodb_aggregations_derive::PipelineStage;
 
+#[derive(Debug, Builder, Default, PipelineStage)]
+#[builder(setter(into))]
+#[pipeline_stage(location = "first", into_document = false)]
 pub struct Count {
     pub field: String,
-}
-
-impl PipelineStage for Count {
-    const NAME: &'static str = "$addFields";
-    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl Count {
@@ -21,20 +19,11 @@ impl Count {
     }
 }
 
-impl Into<Document> for Count {
-    fn into(self) -> Document {
-        let mut doc = Document::new();
-        doc.insert(Self::NAME, self.field);
-        doc
-    }
-}
+// impl Into<Document> for Count {
+//     fn into(self) -> Document {
+//         let mut doc = Document::new();
+//         doc.insert(Self::NAME, self.field);
+//         doc
+//     }
+// }
 
-impl Into<Stage> for Count {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
-        }
-    }
-}

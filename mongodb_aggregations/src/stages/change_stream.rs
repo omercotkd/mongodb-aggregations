@@ -3,7 +3,7 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(location = "first")]
+#[pipeline_stage(location = "first", into_document = true)]
 pub struct ChangeStream {
     #[builder(setter(strip_option), default = "None")]
     all_changes_for_cluster: Option<bool>,

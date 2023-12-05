@@ -13,7 +13,10 @@ pub fn macro_derive(input: TokenStream) -> TokenStream {
 
     let attributes = parse_struct_attributes(&input);
 
-    let into_document = impl_into_document(&input, &attributes.name);
+    let into_document = match attributes.impl_into_document {
+        true => impl_into_document(&input, &attributes.name),
+        false => TokenStream2::new(),
+    };
 
     let into_stage = impl_into_stage(&input, &attributes.name, &attributes.location);
 
@@ -27,6 +30,7 @@ pub fn macro_derive(input: TokenStream) -> TokenStream {
 struct StageAttribute {
     name: String,
     location: String,
+    impl_into_document: bool,
 }
 
 fn parse_struct_attributes(ast: &syn::DeriveInput) -> StageAttribute {
@@ -35,6 +39,7 @@ fn parse_struct_attributes(ast: &syn::DeriveInput) -> StageAttribute {
     let mut attributes = StageAttribute {
         name: ast.ident.to_string().to_camal_case(),
         location: String::from("any"),
+        impl_into_document: true,
     };
 
     let attr = ast

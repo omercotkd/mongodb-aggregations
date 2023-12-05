@@ -65,6 +65,7 @@ mod change_stream_large_event;
 mod coll_stats;
 mod count;
 mod current_op;
+#[cfg(feature = "v5_1")]
 mod densify;
 mod documents;
 mod facet;

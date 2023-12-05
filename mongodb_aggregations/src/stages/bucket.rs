@@ -3,6 +3,7 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
+#[pipeline_stage(into_document = true)]
 pub struct Bucket {
     group_by: Bson,
     boundaries: Vec<Bson>,
@@ -77,6 +78,7 @@ impl BucketBuilder {
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
+#[pipeline_stage(into_document = true)]
 pub struct BucketAuto {
     group_by: Bson,
     buckets: i32,
