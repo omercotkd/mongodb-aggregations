@@ -1,15 +1,13 @@
-use super::{PipelineStage, Stage, StageLocation};
-use bson::Document;
+use bson::doc;
+use mongodb_aggregations_derive::PipelineStage;
 
+#[derive(Debug, Builder, Default, PipelineStage)]
+#[builder(setter(into))]
+#[pipeline_stage(into_document = true)]
 pub struct Unwind {
     pub path: String,
     pub preserve_null_and_empty_arrays: bool,
     pub include_array_index: Option<String>,
-}
-
-impl PipelineStage for Unwind {
-    const NAME: &'static str = "$unwind";
-    const LOCATION: StageLocation = StageLocation::Any;
 }
 
 impl Unwind {
@@ -27,24 +25,6 @@ impl Unwind {
             path,
             preserve_null_and_empty_arrays,
             include_array_index: include_array_index.map(|s| s.to_string()),
-        }
-    }
-}
-
-impl Into<Document> for Unwind {
-    fn into(self) -> Document {
-        let mut doc = Document::new();
-        doc.insert(Self::NAME, self.path);
-        doc
-    }
-}
-
-impl Into<Stage> for Unwind {
-    fn into(self) -> Stage {
-        Stage {
-            location: Self::LOCATION,
-            doc: self.into(),
-            name: Self::NAME,
         }
     }
 }

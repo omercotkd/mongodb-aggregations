@@ -83,8 +83,10 @@ mod project;
 mod redact;
 mod replace;
 mod sample;
+#[cfg(feature = "v4_2")]
 mod search;
 mod set;
+#[cfg(feature = "v5_0")]
 mod set_window_fields;
 mod skip;
 mod sort;
