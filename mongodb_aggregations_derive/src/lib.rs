@@ -3,69 +3,33 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
+mod options;
+mod helpers;
+use options::Options;
+use helpers::ToCamalCase;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{parse_macro_input, DeriveInput};
+
 
 #[proc_macro_derive(PipelineStage, attributes(pipeline_stage))]
 pub fn macro_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let attributes = parse_struct_attributes(&input);
+    let opts = Options::parse(&input);
 
-    let into_document = match attributes.impl_into_document {
-        true => impl_into_document(&input, &attributes.name),
+    let into_document = match opts.impl_into_document {
+        true => impl_into_document(&input, &opts.name),
         false => TokenStream2::new(),
     };
 
-    let into_stage = impl_into_stage(&input, &attributes.name, &attributes.location);
+    let into_stage = impl_into_stage(&input, &opts.name, &opts.location);
 
     quote! {
         #into_document
         #into_stage
     }
     .into()
-}
-
-struct StageAttribute {
-    name: String,
-    location: String,
-    impl_into_document: bool,
-}
-
-fn parse_struct_attributes(ast: &syn::DeriveInput) -> StageAttribute {
-    const LOCATIONS: [&str; 3] = ["any", "first", "last"];
-
-    let mut attributes = StageAttribute {
-        name: ast.ident.to_string().to_camal_case(),
-        location: String::from("any"),
-        impl_into_document: true,
-    };
-
-    let attr = ast
-        .attrs
-        .iter()
-        .filter(|attribute| attribute.path().is_ident("pipeline_stage"))
-        .map(|attribute| match attribute.meta {
-            syn::Meta::List(ref list) => list,
-            _ => panic!("Incorrect format for using the `pipeline_stage` attribute."),
-        })
-        .collect::<Vec<_>>()
-        .pop();
-
-    if let Some(_attr) = attr {
-        // TODO get the name and location from the attribute
-    }
-
-    if !LOCATIONS.contains(&attributes.location.as_str()) {
-        panic!("Incorrect location for using the `pipeline_stage` attribute.");
-    }
-
-    if !attributes.name.starts_with('$') {
-        attributes.name = format!("${}", attributes.name);
-    }
-
-    return attributes;
 }
 
 fn impl_into_stage(
@@ -164,32 +128,4 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
     }
 }
 
-trait ToCamalCase {
-    fn to_camal_case(&self) -> String;
-}
 
-impl ToCamalCase for String {
-    #[doc = "Converts a snake_case string to a camelCase string."]
-    fn to_camal_case(&self) -> String {
-        let mut result = String::from("");
-        let mut make_upper = false;
-        let mut first = true;
-
-        for c in self.chars() {
-            match c {
-                '_' => make_upper = true,
-                _ if first => {
-                    result.push(c.to_ascii_lowercase());
-                    first = false;
-                }
-                _ if make_upper => {
-                    result.push(c.to_ascii_uppercase());
-                    make_upper = false;
-                }
-                _ => result.push(c),
-            }
-        }
-
-        result
-    }
-}
