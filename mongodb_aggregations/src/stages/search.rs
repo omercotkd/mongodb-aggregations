@@ -5,11 +5,11 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(into_document = true, stage_location = "first")]
+#[pipeline_stage(internal_impl = true, location = "first")]
 pub struct Search {}
 
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(into_document = true)]
+#[pipeline_stage(internal_impl = true)]
 pub struct SearchMeta {}

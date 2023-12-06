@@ -3,7 +3,7 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(location = "first", into_document = true)]
+#[pipeline_stage(location = "first", internal_impl = true)]
 pub struct Densify {
     field: String,
     partition_by_fields: Option<Vec<String>>,

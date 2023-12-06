@@ -3,7 +3,7 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(into_document = true)]
+#[pipeline_stage(internal_impl = true)]
 pub struct Unwind {
     pub path: String,
     pub preserve_null_and_empty_arrays: bool,

@@ -3,8 +3,7 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(location = "first")]
-#[pipeline_stage(into_document = true)]
+#[pipeline_stage(location = "first", internal_impl = true)]
 pub struct ChangeStreanSplitLargeEvent {
     fragments: i32,
     of: i32,

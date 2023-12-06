@@ -3,10 +3,10 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(into_document = true)]
+#[pipeline_stage(internal_impl = true)]
 pub struct ReplaceRoot {}
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(into_document = true)]
+#[pipeline_stage(internal_impl = true)]
 pub struct ReplaceWith {}

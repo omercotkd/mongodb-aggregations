@@ -3,27 +3,28 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
-mod options;
 mod helpers;
-use options::Options;
+mod options;
 use helpers::ToCamalCase;
+use options::Options;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{parse_macro_input, DeriveInput};
-
 
 #[proc_macro_derive(PipelineStage, attributes(pipeline_stage))]
 pub fn macro_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
+    // Parsing the options aka the attributes of the struct
     let opts = Options::parse(&input);
 
+    // Generating the impl of Into<Document> if the `impl_into_document` option is set
     let into_document = match opts.impl_into_document {
-        true => impl_into_document(&input, &opts.name),
+        true => impl_into_stage_document(&input, &opts),
         false => TokenStream2::new(),
     };
 
-    let into_stage = impl_into_stage(&input, &opts.name, &opts.location);
+    let into_stage = impl_into_stage(&input, &opts);
 
     quote! {
         #into_document
@@ -32,25 +33,73 @@ pub fn macro_derive(input: TokenStream) -> TokenStream {
     .into()
 }
 
-fn impl_into_stage(
-    ast: &syn::DeriveInput,
-    stage_name: &String,
-    stage_location: &String,
-) -> TokenStream2 {
+fn impl_into_stage(ast: &syn::DeriveInput, opts: &Options) -> TokenStream2 {
     let name = &ast.ident;
 
+    let stage_name = &opts.name;
+
+    let stage_location = &opts.location;
+
+    if opts.internal_impl {
+        return quote! {
+            impl Into<crate::Stage> for #name {
+                fn into(self) -> crate::Stage {
+                    crate::Stage::new(#stage_location.into(), self.into(), #stage_name)
+                }
+            }
+        };
+    }
+
     quote! {
-        impl Into<crate::Stage> for #name {
-            fn into(self) -> crate::Stage {
-                crate::Stage::new(#stage_location.into(), self.into(), #stage_name)
+        impl Into<::mongodb_aggregations::Stage> for #name {
+            fn into(self) -> ::mongodb_aggregations::Stage {
+                ::mongodb_aggregations::Stage::new(#stage_location.into(), self.into(), #stage_name)
             }
         }
     }
 }
 
-fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStream2 {
+fn impl_into_stage_document(ast: &syn::DeriveInput, opts: &Options) -> TokenStream2 {
     let name = &ast.ident;
 
+    // If the `document_field` option is set, we will use the value of this field as the document
+    if let Some(document_field) = &opts.document_field {
+        let stage_name = &opts.name;
+
+        return quote! {
+            impl Into<::bson::Document> for #name {
+                fn into(self) -> ::bson::Document {
+                    let mut stage_doc = ::bson::Document::new();
+
+                    stage_doc.insert(#stage_name, self.#document_field);
+
+                    stage_doc
+                }
+            }
+        };
+    }
+
+    let struct_as_document = struct_into_document(ast);
+
+    let stage_name = &opts.name;
+
+    quote! {
+        impl Into<::bson::Document> for #name {
+            fn into(self) -> ::bson::Document {
+                // this will give us a var named `document` of type `::bson::Document`
+                #struct_as_document
+
+                let mut stage_doc = ::bson::Document::new();
+
+                stage_doc.insert(#stage_name, document);
+
+                stage_doc
+            }
+        }
+    }
+}
+
+fn struct_into_document(ast: &syn::DeriveInput) -> TokenStream2 {
     // Get the fields of the struct
     let fields = match ast.data {
         syn::Data::Struct(ref data_struct) => match data_struct.fields {
@@ -84,7 +133,7 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
         // Generating the document insert for the field
         let insert_quote = quote! {
             #(#field_attrs)*
-            inner_document.insert(#key, self.#field_name);
+            document.insert(#key, self.#field_name);
         };
 
         // if the field is an Option, we need to check if it is Some before inserting it
@@ -98,7 +147,7 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
                     document_fields.push(quote! {
                         #(#field_attrs)*
                         if let Some(value) = self.#field_name {
-                            inner_document.insert(#key, value);
+                            document.insert(#key, value);
                         }
                     });
                 } else {
@@ -110,22 +159,8 @@ fn impl_into_document(ast: &syn::DeriveInput, stage_name: &String) -> TokenStrea
     }
 
     quote! {
-        impl Into<::bson::Document> for #name {
-            fn into(self) -> ::bson::Document {
-
-                let mut inner_document = ::bson::Document::new();
-
-                // Inserting the fields into the inner document
-                #(#document_fields)*
-
-                let mut document = ::bson::Document::new();
-
-                document.insert(#stage_name, inner_document);
-
-                document
-            }
-        }
+        let mut document = ::bson::Document::new();
+        // Inserting the fields into the inner document
+        #(#document_fields)*
     }
 }
-
-

@@ -10,6 +10,10 @@ pub(crate) struct Options {
     pub(crate) location: String,
     #[darling(default = "Options::default_impl_into_document")]
     pub(crate) impl_into_document: bool,
+    #[darling(default)]
+    pub(crate) document_field: Option<String>,
+    #[darling(default = "Options::default_internal_impl")]
+    pub(crate) internal_impl: bool,
 }
 
 impl Options {
@@ -36,10 +40,14 @@ impl Options {
     }
 
     fn default_impl_into_document() -> bool {
-        false
+        true
     }
 
     fn locations() -> &'static [&'static str] {
         &["any", "first", "last"]
+    }
+
+    fn default_internal_impl() -> bool {
+        false
     }
 }

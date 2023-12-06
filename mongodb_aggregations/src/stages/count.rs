@@ -3,7 +3,7 @@ use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(location = "first", into_document = false)]
+#[pipeline_stage(location = "first", internal_impl = true)]
 pub struct Count {
     pub field: String,
 }
