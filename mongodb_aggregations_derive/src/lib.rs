@@ -66,12 +66,14 @@ fn impl_into_stage_document(ast: &syn::DeriveInput, opts: &Options) -> TokenStre
     if let Some(document_field) = &opts.document_field {
         let stage_name = &opts.name;
 
+        let var_name = syn::Ident::new(&document_field, proc_macro2::Span::call_site());
+
         return quote! {
             impl Into<::bson::Document> for #name {
                 fn into(self) -> ::bson::Document {
                     let mut stage_doc = ::bson::Document::new();
 
-                    stage_doc.insert(#stage_name, self.#document_field);
+                    stage_doc.insert(#stage_name, self.#var_name);
 
                     stage_doc
                 }
