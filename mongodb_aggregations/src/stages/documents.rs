@@ -1,18 +1,9 @@
-use bson::{Bson, Document};
+use bson::Bson;
 use mongodb_aggregations_derive::PipelineStage;
 
 #[derive(Debug, Builder, Default, PipelineStage)]
 #[builder(setter(into))]
-#[pipeline_stage(internal_impl = true)]
+#[pipeline_stage(internal_impl = true, document_field = "expr")]
 pub struct Documents {
     expr: Bson,
 }
-
-// impl Into<Document> for Documents {
-//     fn into(self) -> Document {
-//         doc! {
-//             Self::NAME: self.expr
-//         }
-//     }
-// }
-
