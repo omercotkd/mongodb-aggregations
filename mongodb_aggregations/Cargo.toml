@@ -12,10 +12,15 @@ bson = "2.7.0"
 derive_builder = "0.12.0"
 mongodb_aggregations_derive = { path = "../mongodb_aggregations_derive" }
 
+[dev-dependencies]
+mongodb-aggregations = { path = ".", features = ["full"]}
+
 [features]
 default = ["v7_0"]
+full = ["v7_0", "atlas"]
 v7_0 = ["v6_0"]
 v6_0 = ["v5_1"]
 v5_1 = ["v5_0"]
 v5_0 = ["v4_2"]
 v4_2 = []
+atlas = []

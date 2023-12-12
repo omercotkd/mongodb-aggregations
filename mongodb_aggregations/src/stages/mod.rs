@@ -83,7 +83,7 @@ mod project;
 mod redact;
 mod replace;
 mod sample;
-#[cfg(feature = "v4_2")]
+#[cfg(all(feature = "v4_2", feature = "atlas"))]
 mod search;
 mod set;
 #[cfg(feature = "v5_0")]
